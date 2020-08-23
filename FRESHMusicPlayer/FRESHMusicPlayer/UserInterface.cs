@@ -34,12 +34,12 @@ namespace FRESHMusicPlayer
             InitializeComponent();
             ApplySettings();
 
-            Player.songChanged += new EventHandler(songChangedHandler);
-            Player.songStopped += new EventHandler(songStoppedHandler);
-            Player.songException += new EventHandler<PlaybackExceptionEventArgs>(songExceptionHandler);
+            PlayerForm.songChanged += new EventHandler(songChangedHandler);
+            PlayerForm.songStopped += new EventHandler(songStoppedHandler);
+            PlayerForm.songException += new EventHandler<PlaybackExceptionEventArgs>(songExceptionHandler);
             if (Properties.Settings.Default.General_AutoCheckForUpdates)
             {
-                Task task = Task.Run(Player.UpdateIfAvailable);
+                Task task = Task.Run(PlayerForm.UpdateIfAvailable);
             }
             SetCheckBoxes();
 
@@ -47,45 +47,45 @@ namespace FRESHMusicPlayer
 
         private void Form1_FormClosing(Object sender, FormClosingEventArgs e)
         {
-            Properties.Settings.Default.General_Volume = Player.currentvolume;
-            Properties.Settings.Default.General_LastUpdate = Player.lastUpdateCheck;
+            Properties.Settings.Default.General_Volume = PlayerForm.currentvolume;
+            Properties.Settings.Default.General_LastUpdate = PlayerForm.lastUpdateCheck;
             Properties.Settings.Default.Save();
-            if (Properties.Settings.Default.General_DiscordIntegration) Player.DisposeRPC();
+            if (Properties.Settings.Default.General_DiscordIntegration) PlayerForm.DisposeRPC();
             //Application.Exit();
-            Task.Run(Player.ShutdownTheApp);
+            Task.Run(PlayerForm.ShutdownTheApp);
         }
         #region Controls
         private void PlayButton()
         {
-            if (!Player.paused)
+            if (!PlayerForm.paused)
             {
 
                 pauseplayButton.Image = Properties.Resources.baseline_play_arrow_black_18dp;
-                Player.PauseMusic();
+                PlayerForm.PauseMusic();
             }
             else
             {
 
                 pauseplayButton.Image = Properties.Resources.baseline_pause_black_18dp;
-                Player.ResumeMusic();
+                PlayerForm.ResumeMusic();
             }
         }
         private static void StopButton()
         {
-            Player.ClearQueue();
-            Player.StopMusic();
+            PlayerForm.ClearQueue();
+            PlayerForm.StopMusic();
         }
         private void pauseplayButton_Click(object sender, EventArgs e) => PlayButton();
         private void stopButton_Click(object sender, EventArgs e) => StopButton();
 
         private void volumeBar_Scroll(object sender, EventArgs e)
         {
-            Player.currentvolume = (float)volumeBar.Value / 100.0f;
-            if (Player.playing) Player.UpdateSettings();
+            PlayerForm.currentvolume = (float)volumeBar.Value / 100.0f;
+            if (PlayerForm.playing) PlayerForm.UpdateSettings();
             VolumeTimer = 100;
         }
         private void infoButton_Click(object sender, EventArgs e) => infobuttonContextMenu.Show(infoButton, infoButton.Location);
-        private void nextButton_Click(object sender, EventArgs e) => Player.NextSong();
+        private void nextButton_Click(object sender, EventArgs e) => PlayerForm.NextSong();
         private void queuemanagementMenuItem_Click(object sender, EventArgs e)
         {
             QueueManagement queueManagement = new QueueManagement();
@@ -122,8 +122,8 @@ namespace FRESHMusicPlayer
                 selectFileDialog.Filter = "Audio Files|*.wav;*.aiff;*.mp3;*.wma;*.3g2;*.3gp;*.3gp2;*.3gpp;*.asf;*.wmv;*.aac;*.adts;*.avi;*.m4a;*.m4a;*.m4v;*.mov;*.mp4;*.sami;*.smi;*.flac|Other|*";
                 if (selectFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    Player.AddQueue(selectFileDialog.FileName);
-                    Player.PlayMusic();
+                    PlayerForm.AddQueue(selectFileDialog.FileName);
+                    PlayerForm.PlayMusic();
                     if (AddTrackCheckBox.Checked) DatabaseHandler.ImportSong(selectFileDialog.FileNames);
                     LibraryNeedsUpdating = true;
                     await UpdateLibrary();
@@ -145,17 +145,17 @@ namespace FRESHMusicPlayer
                             if (AddTrackCheckBox.Checked) DatabaseHandler.ImportSong(theReader.FilePaths);
                             foreach (string s in theReader.FilePaths)
                             {
-                                Player.AddQueue(s);
+                                PlayerForm.AddQueue(s);
 
                             }
                             LibraryNeedsUpdating = true;
-                            Player.PlayMusic();
+                            PlayerForm.PlayMusic();
                             await UpdateLibrary();
                         }
                         catch (DirectoryNotFoundException)
                         {
                             MessageBox.Show("This playlist file cannot be played because one or more of the songs could not be found.", "Songs not found", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            Player.ClearQueue();
+                            PlayerForm.ClearQueue();
                         }
 
                     }
@@ -165,7 +165,7 @@ namespace FRESHMusicPlayer
         }
         private void importplaylistButton_Click(object sender, EventArgs e) => BrowsePlaylist();
         private void openPlaylistFileToolStripMenuItem_Click(object sender, EventArgs e) => BrowsePlaylist();
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e) => Task.Run(Player.ShutdownTheApp);
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e) => Task.Run(PlayerForm.ShutdownTheApp);
         private void UserInterface_DragEnter(object sender, DragEventArgs e)
         {
             e.Effect = DragDropEffects.Copy;
@@ -183,14 +183,14 @@ namespace FRESHMusicPlayer
                     TaskIsRunning = true;
                     
                     string[] tracks = (string[])e.Data.GetData(DataFormats.FileDrop);
-                    Player.AddQueue(tracks);
+                    PlayerForm.AddQueue(tracks);
 
                     if (AddTrackCheckBox.Checked && (e.KeyState & 8) != 8 /*CTRL key*/) DatabaseHandler.ImportSong(tracks);
 
                 });
                 TaskIsRunning = false;
                 LibraryNeedsUpdating = true;
-                if ((e.KeyState & 4) != 4 /*SHIFT key*/) Player.PlayMusic();
+                if ((e.KeyState & 4) != 4 /*SHIFT key*/) PlayerForm.PlayMusic();
                 await UpdateLibrary();
             }
         }
@@ -359,7 +359,7 @@ namespace FRESHMusicPlayer
         }
         private void songsListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            /*if (Player.playing) // If music is already playing, we don't want the user to press the "Play Song" button
+            /*if (PlayerForm.playing) // If music is already playing, we don't want the user to press the "Play Song" button
             {
                 Library_SongsPlayButton.Enabled = false;
                 Library_SongsQueueButton.Enabled = true;
@@ -388,16 +388,16 @@ namespace FRESHMusicPlayer
         {
             foreach (int selectedItem in listBox.SelectedIndices)
             {
-                Player.AddQueue(list[selectedItem]);
+                PlayerForm.AddQueue(list[selectedItem]);
             }
-            Player.PlayMusic();
+            PlayerForm.PlayMusic();
             listBox.ClearSelected();
         }
         private void LibraryQueueButton(ListBox listBox, List<string> list)
         {
             foreach (int selectedItem in listBox.SelectedIndices)
             {
-                Player.AddQueue(list[selectedItem]);
+                PlayerForm.AddQueue(list[selectedItem]);
             }
             listBox.ClearSelected();
         }
@@ -485,7 +485,7 @@ namespace FRESHMusicPlayer
         private void CheckNowButton_Click(object sender, EventArgs e)
         {
             UpdateStatusLabel.Text = "Checking for updates - The window might hang for a bit.";
-            Task task = Task.Run(Player.UpdateIfAvailable);
+            Task task = Task.Run(PlayerForm.UpdateIfAvailable);
             while (!task.IsCompleted) { }
             task.Dispose();
             SetCheckBoxes();
@@ -512,14 +512,14 @@ namespace FRESHMusicPlayer
         private void songChangedHandler(object sender, EventArgs e)
         {
             progressTimer.Enabled = true;
-            ATL.Track metadata = new ATL.Track(Player.filePath);
+            ATL.Track metadata = new ATL.Track(PlayerForm.filePath);
             titleLabel.Text = $"{metadata.Artist} - {metadata.Title}";
             Text = $"{metadata.Artist} - {metadata.Title} | FRESHMusicPlayer";
             getAlbumArt();
-            ProgressBar.Maximum = (int)Player.audioFile.TotalTime.TotalSeconds;
+            ProgressBar.Maximum = (int)PlayerForm.Player.CurrentBackend.TotalTime.TotalSeconds;
             if (Properties.Settings.Default.General_DiscordIntegration)
             {
-                Player.UpdateRPC("play", metadata.Artist, metadata.Title);
+                PlayerForm.UpdateRPC("play", metadata.Artist, metadata.Title);
             }
         }
         private void songStoppedHandler(object sender, EventArgs e)
@@ -534,20 +534,20 @@ namespace FRESHMusicPlayer
             Notification notification = new Notification("An error occured.", $"{e.Details}\nWe'll skip to the next track for you.", 2500);
             notification.Location = Location;
             notification.Show();
-            Player.NextSong();
+            PlayerForm.NextSong();
         }
         private void progressTimer_Tick(object sender, EventArgs e)
         {
-            if (Player.playing & !Player.paused)
+            if (PlayerForm.playing & !PlayerForm.paused)
             {
-                Player.avoidnextqueue = false;
-                progressIndicator.Text = Player.getSongPosition();
-                if ((int)Player.audioFile.CurrentTime.TotalSeconds <= ProgressBar.Maximum) ProgressBar.Value = (int)Player.audioFile.CurrentTime.TotalSeconds;
+                PlayerForm.avoidnextqueue = false;
+                progressIndicator.Text = PlayerForm.getSongPosition();
+                if ((int)PlayerForm.Player.CurrentBackend.CurrentTime.TotalSeconds <= ProgressBar.Maximum) ProgressBar.Value = (int)PlayerForm.Player.CurrentBackend.CurrentTime.TotalSeconds;
             }
         }
         private void getAlbumArt()
         {
-            ATL.Track theTrack = new ATL.Track(Player.filePath);
+            ATL.Track theTrack = new ATL.Track(PlayerForm.filePath);
             IList<ATL.PictureInfo> embeddedPictures = theTrack.EmbeddedPictures;
             if (embeddedPictures.Count != 0)
             {
@@ -583,7 +583,7 @@ namespace FRESHMusicPlayer
 
         private void ProgressBar_Scroll(object sender, EventArgs e)
         {
-            if (Player.playing) Player.RepositionMusic(ProgressBar.Value);
+            if (PlayerForm.playing) PlayerForm.RepositionMusic(ProgressBar.Value);
         }
 
         private void volumeBar_MouseEnter(object sender, EventArgs e) => VolumeBarTimer.Enabled = false;
@@ -628,14 +628,14 @@ namespace FRESHMusicPlayer
                         return true;
                     case Keys.V:
                     case Keys.MediaNextTrack:
-                        Player.NextSong();
+                        PlayerForm.NextSong();
                         return true;
                     case Keys.X:
                     case Keys.MediaStop:
                         StopButton();
                         return true;
                     case Keys.P:
-                        TagEditor tagEditor = new TagEditor(new List<string> { Player.filePath });
+                        TagEditor tagEditor = new TagEditor(new List<string> { PlayerForm.filePath });
                         tagEditor.Show();
                         return true;
                     case Keys.O:
@@ -667,7 +667,18 @@ namespace FRESHMusicPlayer
         // MUSIC
 
         // HELP
-        private void aboutFRESHMusicPlayerToolStripMenuItem_Click(object sender, EventArgs e) => Process.Start("https://imgur.com/sozTGTK");
+        private void aboutFRESHMusicPlayerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string url = "https://imgur.com/sozTGTK";
+            try
+            {
+                Process.Start(url);
+            }
+            catch
+            {
+                Process.Start("xdg-open", url);
+            }
+        }
         private void aboutFRESHMusicPlayerToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             MessageBox.Show($"{Application.ProductVersion}\nBy Squid Grill & Open source contributors :)\nLicensed under the GPL-3.0 license", "About FRESHMusicPlayer", MessageBoxButtons.OK);
@@ -682,14 +693,14 @@ namespace FRESHMusicPlayer
                                                                                         Color.Black,
                                                                                         Color.White);
             else ThemeHandler.SetColors(this, (Properties.Settings.Default.Appearance_AccentColorRed, Properties.Settings.Default.Appearance_AccentColorGreen, Properties.Settings.Default.Appearance_AccentColorBlue), (255, 255, 255), Color.White, Color.Black);
-            if (Properties.Settings.Default.General_DiscordIntegration) Player.InitDiscordRPC(); else Player.DisposeRPC();
+            if (Properties.Settings.Default.General_DiscordIntegration) PlayerForm.InitDiscordRPC(); else PlayerForm.DisposeRPC();
         
         }
         public void SetCheckBoxes()
         {
             SettingsVersionText.Text = $"Current Version - {Application.ProductVersion}";
 
-            Player.currentvolume = Properties.Settings.Default.General_Volume;
+            PlayerForm.currentvolume = Properties.Settings.Default.General_Volume;
             volumeBar.Value = (int)(Properties.Settings.Default.General_Volume * 100.0f);
             MiniPlayerOpacityTrackBar.Value = (int)(Properties.Settings.Default.MiniPlayer_UnfocusedOpacity * 100.0f);
             if (Properties.Settings.Default.Appearance_DarkMode) darkradioButton.Checked = true; else lightradioButton.Checked = true;
@@ -729,44 +740,39 @@ namespace FRESHMusicPlayer
 
         #endregion settings
 
-        private void UserInterface_DpiChanged(object sender, DpiChangedEventArgs e)
-        {
-            //Font = new Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-        }
-
-        private void previousTrackToolStripMenuItem_Click(object sender, EventArgs e) => Player.PreviousSong();
+        private void previousTrackToolStripMenuItem_Click(object sender, EventArgs e) => PlayerForm.PreviousSong();
 
         private void repeatOnceToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (!Player.RepeatOnce)
+            if (!PlayerForm.RepeatOnce)
             {
                 repeatOnceToolStripMenuItem.Checked = true;
-                Player.RepeatOnce = true;
+                PlayerForm.RepeatOnce = true;
             }
             else
             {
                 repeatOnceToolStripMenuItem.Checked = false;
-                Player.RepeatOnce = false;
+                PlayerForm.RepeatOnce = false;
             }
         }
 
         private void shuffleToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (!Player.Shuffle)
+            if (!PlayerForm.Shuffle)
             {
                 shuffleToolStripMenuItem.Checked = true;
-                Player.Shuffle = true;
+                PlayerForm.Shuffle = true;
             }
             else
             {
                 shuffleToolStripMenuItem.Checked = false;
-                Player.Shuffle = false;
+                PlayerForm.Shuffle = false;
             }
         }
 
         private void editToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            TagEditor tagEditor = new TagEditor(new List<string> { Player.filePath });
+            TagEditor tagEditor = new TagEditor(new List<string> { PlayerForm.filePath });
             tagEditor.Owner = this;
             tagEditor.Show();
         }

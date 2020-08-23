@@ -31,7 +31,7 @@ namespace FRESHMusicPlayer.Forms
             InitializeComponent();
             this.filePaths = filePaths;
             InitFields();
-            Player.songChanged += new EventHandler(SongChangedHandler);
+            PlayerForm.songChanged += new EventHandler(SongChangedHandler);
             
         }
  
@@ -92,7 +92,7 @@ namespace FRESHMusicPlayer.Forms
         {
             foreach (string path in FilePathsToSave)
             {
-                if (path == Player.filePath) break;
+                if (path == PlayerForm.filePath) break;
             }
             SaveChanges(FilePathsToSave);
             FilePathsToSave.Clear();
@@ -118,7 +118,7 @@ namespace FRESHMusicPlayer.Forms
             }
             else
             {
-                Player.songChanged -= SongChangedHandler;               
+                PlayerForm.songChanged -= SongChangedHandler;               
             }
         }
 
@@ -126,7 +126,7 @@ namespace FRESHMusicPlayer.Forms
         {
             foreach (string path in filePaths)
             {
-                if (path != Player.filePath) continue;              // We're good
+                if (path != PlayerForm.filePath) continue;              // We're good
                 else
                 {
                     FilePathsToSave.AddRange(filePaths);            // SongChanged event handler will handle this (can't save changes if player is currently playing it)
@@ -159,7 +159,7 @@ namespace FRESHMusicPlayer.Forms
         {
             foreach (string path in filePaths)
             {
-                if (path != Player.filePath) continue;              // We're good
+                if (path != PlayerForm.filePath) continue;              // We're good
                 else
                 {
                     FilePathsToSave.AddRange(filePaths);            // SongChanged event handler will handle this (can't save changes if player is currently playing it)

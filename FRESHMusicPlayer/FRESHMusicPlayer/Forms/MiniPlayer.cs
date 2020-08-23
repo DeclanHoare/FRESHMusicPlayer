@@ -18,9 +18,9 @@ namespace FRESHMusicPlayer
         public MiniPlayer()
         {
             InitializeComponent();
-            Player.songChanged += new EventHandler(this.songChangedHandler);
-            Player.songStopped += Player_songStopped;
-            Player.songException += Player_songException;
+            PlayerForm.songChanged += new EventHandler(this.songChangedHandler);
+            PlayerForm.songStopped += Player_songStopped;
+            PlayerForm.songException += Player_songException;
             if (Properties.Settings.Default.Appearance_DarkMode) ThemeHandler.SetColors(this, (44, 47, 51), (255, 255, 255), Color.Black, Color.White); else ThemeHandler.SetColors(this, (4, 160, 219), (255, 255, 255), Color.White, Color.Black);
         }
 
@@ -45,10 +45,10 @@ namespace FRESHMusicPlayer
 
         private void UpdateMetadata()
         {
-            ATL.Track metadata = new ATL.Track(Player.filePath);
+            ATL.Track metadata = new ATL.Track(PlayerForm.filePath);
             titleLabel.Text = $"{metadata.Artist} - {metadata.Title}";
             Text = $"{metadata.Artist} - {metadata.Title} | FRESHMusicPlayer";
-            ATL.Track theTrack = new ATL.Track(Player.filePath);
+            ATL.Track theTrack = new ATL.Track(PlayerForm.filePath);
             IList<ATL.PictureInfo> embeddedPictures = theTrack.EmbeddedPictures;
             if (embeddedPictures.Count != 0)
             {
@@ -64,24 +64,24 @@ namespace FRESHMusicPlayer
 
         private void pauseplayButton_Click(object sender, EventArgs e)
         {
-            if (!Player.paused)
+            if (!PlayerForm.paused)
             {
 
                 pauseplayButton.Image = Properties.Resources.baseline_play_arrow_black_18dp;
-                Player.PauseMusic();
+                PlayerForm.PauseMusic();
             }
             else
             {
 
                 pauseplayButton.Image = Properties.Resources.baseline_pause_black_18dp;
-                Player.ResumeMusic();
+                PlayerForm.ResumeMusic();
             }
         }
 
         private void stopButton_Click(object sender, EventArgs e)
         {
-            Player.ClearQueue();
-            Player.StopMusic();
+            PlayerForm.ClearQueue();
+            PlayerForm.StopMusic();
         }
 
         private void infoButton_Click(object sender, EventArgs e)
@@ -92,9 +92,9 @@ namespace FRESHMusicPlayer
 
         private void progressTimer_Tick(object sender, EventArgs e)
         {
-            if (Player.playing & !Player.paused)
+            if (PlayerForm.playing & !PlayerForm.paused)
             {
-                progressIndicator.Text = Player.getSongPosition();
+                progressIndicator.Text = PlayerForm.getSongPosition();
             }
         }
 
@@ -115,12 +115,12 @@ namespace FRESHMusicPlayer
 
         private void nextButton_Click(object sender, EventArgs e)
         {
-            Player.NextSong();
+            PlayerForm.NextSong();
         }
 
         private void MiniPlayer_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Player.songChanged -= this.songChangedHandler; // Make sure we subscribe from the song changed event before the form closes (otherwise we'd have resource
+            PlayerForm.songChanged -= this.songChangedHandler; // Make sure we subscribe from the song changed event before the form closes (otherwise we'd have resource
                                                            // leaking issues and errors from trying to call things that don't exist)
         }
 

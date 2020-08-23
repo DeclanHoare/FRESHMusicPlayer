@@ -18,23 +18,23 @@ namespace FRESHMusicPlayer
         {
             InitializeComponent();
             PopulateList();
-            Player.songChanged += new EventHandler(this.songChangedHandler);
+            PlayerForm.songChanged += new EventHandler(this.songChangedHandler);
             if (Properties.Settings.Default.Appearance_DarkMode) ThemeHandler.SetColors(this, (44, 47, 51), (255, 255, 255), Color.Black, Color.White);
         }   
         public void PopulateList()
         {
-            var list = Player.GetQueue();
+            var list = PlayerForm.GetQueue();
             var nextlength = 0;
             int number = 1;
             foreach (var song in list)
             {
                 string place;
-                if (Player.QueuePosition == number) place = "NOW PLAYING: ";
-                else if (Player.QueuePosition == number - 1) place = "UP NEXT: ";
-                else place = (number - Player.QueuePosition).ToString();
+                if (PlayerForm.QueuePosition == number) place = "NOW PLAYING: ";
+                else if (PlayerForm.QueuePosition == number - 1) place = "UP NEXT: ";
+                else place = (number - PlayerForm.QueuePosition).ToString();
                 Track theTrack = new Track(song);
                 listBox1.Items.Add($"{place} {theTrack.Artist} - {theTrack.Title}");
-                if (Player.QueuePosition < number) nextlength += theTrack.Duration;
+                if (PlayerForm.QueuePosition < number) nextlength += theTrack.Duration;
                 number++;
             }
             label2.Text = $"Remaining Time - {Format(nextlength)}";
@@ -42,7 +42,7 @@ namespace FRESHMusicPlayer
 
         private void clearQueue_Click(object sender, EventArgs e)
         {
-            Player.ClearQueue();
+            PlayerForm.ClearQueue();
             listBox1.Items.Clear();
             PopulateList();
         }
@@ -54,7 +54,7 @@ namespace FRESHMusicPlayer
             {
                 if (selectFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    Player.AddQueue(selectFileDialog.FileName);
+                    PlayerForm.AddQueue(selectFileDialog.FileName);
                     listBox1.Items.Clear();
                     PopulateList();
                 }
@@ -74,7 +74,7 @@ namespace FRESHMusicPlayer
                     {
                         foreach (string s in theReader.FilePaths)
                         {
-                            Player.AddQueue(s);
+                            PlayerForm.AddQueue(s);
                         }
                         listBox1.Items.Clear();
                         PopulateList();
@@ -82,7 +82,7 @@ namespace FRESHMusicPlayer
                     catch (System.IO.DirectoryNotFoundException)
                     {
                         MessageBox.Show("This playlist file cannot be played because one or more of the songs could not be found.", "Songs not found", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        Player.ClearQueue();
+                        PlayerForm.ClearQueue();
                     }
 
                 }
@@ -92,13 +92,13 @@ namespace FRESHMusicPlayer
 
         private void next_Click(object sender, EventArgs e)
         {
-            Player.NextSong();
+            PlayerForm.NextSong();
             listBox1.Items.Clear();
             PopulateList();
         }
         private void previous_Click(object sender, EventArgs e)
         {
-            Player.PreviousSong();
+            PlayerForm.PreviousSong();
             listBox1.Items.Clear();
             PopulateList();
         }
@@ -145,7 +145,7 @@ namespace FRESHMusicPlayer
 
         private void QueueManagement_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Player.songChanged -= this.songChangedHandler; // Make sure we subscribe from the song changed event before the form closes (otherwise we'd have resource
+            PlayerForm.songChanged -= this.songChangedHandler; // Make sure we subscribe from the song changed event before the form closes (otherwise we'd have resource
                                                            // leaking issues and errors from trying to call things that don't exist)
         }
         private void songChangedHandler(object sender, EventArgs e)
@@ -156,8 +156,8 @@ namespace FRESHMusicPlayer
 
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            Player.QueuePosition = listBox1.SelectedIndex;
-            Player.PlayMusic();
+            PlayerForm.QueuePosition = listBox1.SelectedIndex;
+            PlayerForm.PlayMusic();
         }
 
         private void listBox1_MouseClick(object sender, MouseEventArgs e) => contextMenuStrip1.Show(listBox1, e.Location);

@@ -10,24 +10,23 @@ using FRESHMusicPlayer.Utilities;
 using System.Net.Http;
 namespace FRESHMusicPlayer
 {
-    public partial class Player : Form
+    public partial class PlayerForm : Form
     {
-        private static WaveOutEvent outputDevice;
-        public static AudioFileReader audioFile;
-        public static bool avoidnextqueue = false;
+        public static readonly Player Player = new Player();
+        public static bool avoidnextqueue { get => Player.AvoidNextQueue; set => Player.AvoidNextQueue = value; }
         public static DiscordRpcClient client;
 
         //public static int position;
-        public static float currentvolume = 1;
-        public static string filePath = "";
-        public static bool playing = false;
-        public static bool paused = false;
+        public static float currentvolume { get => Player.CurrentVolume; set => Player.CurrentVolume = value; }
+        public static string filePath { get => Player.FilePath; set => Player.FilePath = value; }
+        public static bool playing { get => Player.Playing; set => Player.Playing = value; }
+        public static bool paused { get => Player.Paused; set => Player.Paused = value; }
 
-        public static bool RepeatOnce = false;
-        public static bool Shuffle = false;
+        public static bool RepeatOnce { get => Player.RepeatOnce; set => Player.RepeatOnce = value; }
+        public static bool Shuffle { get => Player.Shuffle; set => Player.Shuffle = value; }
 
-        private static List<string> Queue = new List<string>();
-        public static int QueuePosition = 0;
+        private static List<string> Queue => Player.Queue;
+        public static int QueuePosition { get => Player.QueuePosition; set => Player.QueuePosition = value; }
 
         public static DateTime lastUpdateCheck;
         /// <summary>
@@ -36,7 +35,14 @@ namespace FRESHMusicPlayer
         public static event EventHandler songChanged;
         public static event EventHandler songStopped;
         public static event EventHandler<PlaybackExceptionEventArgs> songException;
-        public Player()
+        
+        static PlayerForm()
+        {
+            Player.SongChanged += songChanged;
+            Player.SongStopped += songStopped;
+            Player.SongException += songException;
+        }
+        public PlayerForm()
         {
             InitializeComponent();
             UserInterface userInterface = new UserInterface();  // Show your UI form here.
@@ -50,13 +56,13 @@ namespace FRESHMusicPlayer
         /// <param name="filePath">The file path to the track to add.</param>
         public static void AddQueue(string filePath)
         {
-            Queue.Add(filePath);
+            Player.AddQueue(filePath);
         }
         public static void AddQueue(string[] filePaths)
         {
-            Queue.AddRange(filePaths);
+            Player.AddQueue(filePaths);
         }
-        public static void ClearQueue() => Queue.Clear();
+        public static void ClearQueue() => Player.ClearQueue();
         public static List<string> GetQueue()
         {
             return Queue;
@@ -66,10 +72,7 @@ namespace FRESHMusicPlayer
         /// </summary>
         public static void PreviousSong()
         {
-            if (QueuePosition <= 1) return;
-            if (Shuffle) Queue = PlayerUtils.ShuffleQueue(Queue);
-            QueuePosition -= 2;
-            PlayMusic();
+            Player.PreviousSong();
         }
         /// <summary>
         /// Skips to the next track in the queue. If there are no more tracks, the player will stop.
@@ -77,167 +80,46 @@ namespace FRESHMusicPlayer
         /// <param name="avoidnext">Intended to be used only by the player</param>
         public static void NextSong(bool avoidnext=false)
         {
-            avoidnextqueue = avoidnext;
-            if (QueuePosition >= Queue.Count)
-            {
-                Queue.Clear();
-                QueuePosition = 0;
-                StopMusic();
-                return;
-            }
-            if (RepeatOnce) QueuePosition--; // Don't advance queue, play the same thing again
-            if (Shuffle) Queue = PlayerUtils.ShuffleQueue(Queue);
-            PlayMusic();    
+            Player.NextSong();
         }
         // Music Playing Controls
-        private static void OnPlaybackStopped(object sender, StoppedEventArgs args)
-        {
-            if (!avoidnextqueue) NextSong(false);
-            else
-            {
-                avoidnextqueue = false;
-            }
-        }
         /// <summary>
-        /// Repositions the playback position of the player.
+        /// Repositions the playback position of the Player.
         /// </summary>
         /// <param name="seconds">The position in to the track to skip in, in seconds.</param>
         public static void RepositionMusic(int seconds)
         {
-            audioFile.CurrentTime = TimeSpan.FromSeconds(seconds);
+            Player.RepositionMusic(seconds);
         }
 
         /// <summary>
         /// Starts playing the queue. In order to play a track, you must first add it to the queue using <see cref="AddQueue(string)"/>.
         /// </summary>
-        /// <param name="repeat">If true, avoids dequeuing the next track. Not to be used for anything other than the player.</param>
+        /// <param name="repeat">If true, avoids dequeuing the next track. Not to be used for anything other than the Player.</param>
         public static void PlayMusic(bool repeat=false)
         {           
-            if (!repeat && Queue.Count != 0) filePath = Queue[QueuePosition]; // Some functions want to play the same song again
-            QueuePosition++;
-            void PMusic()
-            {
-                if (outputDevice == null)
-                {
-                    outputDevice = new WaveOutEvent();
-                    outputDevice.PlaybackStopped += OnPlaybackStopped;
-                }
-                if (audioFile == null)
-                {
-                    audioFile = new AudioFileReader(filePath);
-                    outputDevice.Init(audioFile);
-                }
-                outputDevice.Play();
-                outputDevice.Volume = currentvolume;
-                playing = true;
-            }
-            try
-            {
-                if (playing != true)
-                {
-                    PMusic();
-                }
-                else
-                {
-                    avoidnextqueue = true;
-                    StopMusic();
-                    PMusic();
-                }
-                songChanged?.Invoke(null, EventArgs.Empty); // Now that playback has started without any issues, fire the song changed event.
-            }
-            catch (System.IO.FileNotFoundException)
-            {
-                PlaybackExceptionEventArgs args = new PlaybackExceptionEventArgs();
-                args.Details = "That's not a valid file path!";
-                songException.Invoke(null, args);
-            }
-            catch (System.ArgumentException)
-            {
-                PlaybackExceptionEventArgs args = new PlaybackExceptionEventArgs();
-                args.Details = "That's not a valid file path!";
-                songException.Invoke(null, args);
-            }
-            catch (System.Runtime.InteropServices.COMException)
-            {
-                PlaybackExceptionEventArgs args = new PlaybackExceptionEventArgs();
-                args.Details = "This isn't a valid audio file!";
-                songException.Invoke(null, args);
-            }
-            catch (System.FormatException)
-            {
-                PlaybackExceptionEventArgs args = new PlaybackExceptionEventArgs();
-                args.Details = "This audio file might be corrupt!";
-                songException.Invoke(null, args);
-            }
-            catch (System.InvalidOperationException)
-            {
-                PlaybackExceptionEventArgs args = new PlaybackExceptionEventArgs();
-                args.Details = "This audio file uses VBR \nor might be corrupt!";
-                songException.Invoke(null, args);
-            }
-
-            
+            Player.PlayMusic(repeat);            
         }
         /// <summary>
         /// Completely stops and disposes the player and resets all playback related variables to their defaults.
         /// </summary>
         public static void StopMusic()
         {
-            if (playing)
-                try
-                {
-                    outputDevice.Dispose();
-                    outputDevice = null;
-                    audioFile?.Dispose();
-                    audioFile = null;
-                    playing = false;
-                    paused = false;
-                    //position = 0;
-                    songStopped?.Invoke(null, EventArgs.Empty);
-                    if (Properties.Settings.Default.General_DiscordIntegration)
-                    {
-                        UpdateRPC("idle", "Nobody", "Idle");
-                    }
-                }
-                catch (NAudio.MmException)  // This is an old workaround from the original FMP days. Shouldn't be needed anymore, but is kept anyway for the sake of
-                {                           // stability.
-                    Console.WriteLine("Things are breaking!");
-                    Console.WriteLine(filePath);
-                    outputDevice?.Dispose();
-                    outputDevice = new WaveOutEvent();
-                    outputDevice.PlaybackStopped += OnPlaybackStopped; // Does the same initiallization PlayMusic() does.
-                    audioFile = new AudioFileReader(filePath);
-                    outputDevice.Init(audioFile);
-                    PlayMusic(true);
-                }
-            
+            Player.StopMusic();
         }
         /// <summary>
         /// Pauses playback without disposing. Can later be resumed with <see cref="ResumeMusic()"/>.
         /// </summary>
         public static void PauseMusic()
         {
-            if (!paused) outputDevice?.Pause();
-            //playing = false;
-            paused = true;
-            if (Properties.Settings.Default.General_DiscordIntegration)
-            {
-                UpdateRPC("pause", "Nobody", "Paused");
-            }
+            Player.PauseMusic();
         }// Pauses the music without completely disposing it
         /// <summary>
         /// Resumes playback.
         /// </summary>
         public static void ResumeMusic()
         {
-            if (paused) outputDevice?.Play();
-            //playing = true;
-            paused = false;
-            if (Properties.Settings.Default.General_DiscordIntegration)
-            {
-                ATL.Track metadata = new ATL.Track(filePath);
-                UpdateRPC("play", metadata.Artist, metadata.Title);
-            }
+            Player.ResumeMusic();
         }// Resumes music that has been paused
         /// <summary>
         /// Updates the volume of the player during playback to the value of <see cref="currentvolume"/>.
@@ -245,7 +127,7 @@ namespace FRESHMusicPlayer
         /// </summary>
         public static void UpdateSettings()
         {
-            outputDevice.Volume = currentvolume;
+            Player.UpdateSettings();
         }
         // Other Logic Stuff
         /// <summary>
@@ -286,9 +168,9 @@ namespace FRESHMusicPlayer
             }
 
             //ATL.Track theTrack = new ATL.Track(filePath);
-            var length = audioFile.TotalTime;
+            var length = Player.CurrentBackend.TotalTime;
             
-            return $"{Format((int)audioFile.CurrentTime.TotalSeconds)} / {Format((int)length.TotalSeconds)}";
+            return $"{Format((int)Player.CurrentBackend.CurrentTime.TotalSeconds)} / {Format((int)length.TotalSeconds)}";
         }
         #endregion
         // Integration
@@ -402,7 +284,8 @@ namespace FRESHMusicPlayer
         #endregion
         private void Player_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Application.Exit();
+            if (e.CloseReason != CloseReason.ApplicationExitCall)
+                Application.Exit();
         }
     }
 }

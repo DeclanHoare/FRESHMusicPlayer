@@ -71,6 +71,9 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FRESHMusicPlayer.Core">
+      <HintPath>..\..\..\FRESHMusicPlayer-Core\FRESHMusicPlayer.Player\FRESHMusicPlayer.Player\bin\$(Configuration)\netstandard2.0\publish\FRESHMusicPlayer.Core.dll</HintPath>
+    </Reference>
     <Reference Include="ATL, Version=2.13.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\z440.atl.core.2.13.0\lib\net30\ATL.dll</HintPath>
     </Reference>
@@ -127,6 +130,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="netstandard" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Forms\TagEditor.cs">
@@ -135,9 +139,6 @@
     <Compile Include="Forms\TagEditor.Designer.cs">
       <DependentUpon>TagEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="Handlers\Integrations\DiscogsIntegration.cs" />
-    <Compile Include="Handlers\Integrations\Integration.cs" />
-    <Compile Include="Handlers\InternetHandler.cs" />
     <Compile Include="Utilities\DatabaseFormat.cs" />
     <Compile Include="Forms\MiniPlayer.cs">
       <SubType>Form</SubType>
@@ -163,15 +164,12 @@
     <Compile Include="Forms\SongInfo.Designer.cs">
       <DependentUpon>SongInfo.cs</DependentUpon>
     </Compile>
-    <Compile Include="Handlers\DatabaseHandler.cs" />
-    <Compile Include="Handlers\ErrorHandler.cs" />
     <Compile Include="Handlers\ThemeHandler.cs" />
-    <Compile Include="Handlers\UpdateHandler.cs" />
-    <Compile Include="Player.cs">
+    <Compile Include="PlayerForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Player.Designer.cs">
-      <DependentUpon>Player.cs</DependentUpon>
+    <Compile Include="PlayerForm.Designer.cs">
+      <DependentUpon>PlayerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -197,8 +195,8 @@
     <EmbeddedResource Include="Forms\TagEditor.resx">
       <DependentUpon>TagEditor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Player.resx">
-      <DependentUpon>Player.cs</DependentUpon>
+    <EmbeddedResource Include="PlayerForm.resx">
+      <DependentUpon>PlayerForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

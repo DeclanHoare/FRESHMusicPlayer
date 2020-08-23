@@ -1592,7 +1592,6 @@
             this.Text = "FRESHMusicPlayer";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.UserInterface_Load);
-            this.DpiChanged += new System.Windows.Forms.DpiChangedEventHandler(this.UserInterface_DpiChanged);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.UserInterface_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.UserInterface_DragEnter);
             this.menuBar.ResumeLayout(false);

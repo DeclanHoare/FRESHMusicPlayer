@@ -14,7 +14,7 @@ namespace FRESHMusicPlayer
         public SongInfo()
         {
             InitializeComponent();
-            Track track = new Track(Player.filePath);
+            Track track = new Track(PlayerForm.filePath);
             songtitleText.Text = $"{track.Artist} - {track.Title}";
             albumText.Text = $"Album - {track.Album}";
             genreText.Text = $"Genre - {track.Genre}";
@@ -42,7 +42,7 @@ namespace FRESHMusicPlayer
 
         private void pictureBox1_Click(object sender, System.EventArgs e)
         {
-            Track track = new Track(Player.filePath);
+            Track track = new Track(PlayerForm.filePath);
             IList<ATL.PictureInfo> embeddedPictures = track.EmbeddedPictures;
             foreach (PictureInfo pic in embeddedPictures)
             {

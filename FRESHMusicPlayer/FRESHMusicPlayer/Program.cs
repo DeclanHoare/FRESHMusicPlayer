@@ -17,7 +17,7 @@ namespace FRESHMusicPlayer
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Player());
+            Application.Run(new PlayerForm());
         }
     }
 }

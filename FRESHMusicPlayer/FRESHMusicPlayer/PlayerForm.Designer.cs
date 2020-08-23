@@ -1,6 +1,6 @@
 ﻿namespace FRESHMusicPlayer
 {
-    partial class Player
+    partial class PlayerForm
     {
         /// <summary>
         /// Required designer variable.
@@ -37,7 +37,7 @@
             this.ClientSize = new System.Drawing.Size(120, 43);
             this.ControlBox = false;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-            this.Name = "Player";
+            this.Name = "PlayerForm";
             this.Opacity = 0D;
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
